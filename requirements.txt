@@ -1,2 +1,26 @@
-Django>=4.2.0,<5.0.0
-
+asgiref==3.9.1
+-e git+https://github.com/jbradberry/boardgame-socketplayer@ed2b7aaba11f622d98a6d5bad167024f342f5c79#egg=BoardPlayer
+-e git+https://github.com/jbradberry/boardgame-socketserver@d4b715b2f1bb822999577d75284450d8e0cb9a0d#egg=BoardServer
+certifi==2025.4.26
+charset-normalizer==3.4.2
+distlib==0.3.9
+Django==4.2.26
+filelock==3.18.0
+gevent==25.5.1
+greenlet==3.2.3
+gunicorn==23.0.0
+idna==3.10
+packaging==25.0
+pbr==6.1.1
+platformdirs==4.3.8
+requests==2.32.3
+setuptools==80.9.0
+six==1.17.0
+sqlparse==0.5.3
+stevedore==5.4.1
+urllib3==2.4.0
+virtualenv==20.31.2
+virtualenv-clone==0.5.7
+virtualenvwrapper==6.1.1
+zope.event==5.1
+zope.interface==7.2
