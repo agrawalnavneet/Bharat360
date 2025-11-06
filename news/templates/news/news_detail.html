@@ -1,0 +1,210 @@
+{% extends 'news/base.html' %}
+
+{% block title %}{{ article.title }} - Government News Feedback{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <article class="card mb-4">
+            <div class="card-header">
+                <span class="badge bg-light text-dark badge-category">
+                    {{ article.get_category_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                <h1 class="card-title display-6 mb-4">{{ article.title }}</h1>
+                
+                <div class="article-meta mb-4 pb-3 border-bottom">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <i class="bi bi-building"></i> 
+                                <strong>Source:</strong> {{ article.source.name }}
+                            </p>
+                            <p class="mb-2">
+                                <i class="bi bi-geo-alt"></i> 
+                                <strong>Region:</strong> {{ article.source.region }}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <i class="bi bi-calendar"></i> 
+                                <strong>Published:</strong> {{ article.published_date|date:"F d, Y" }}
+                            </p>
+                            {% if article.url %}
+                                <p class="mb-2">
+                                    <a href="{{ article.url }}" target="_blank" class="text-decoration-none">
+                                        <i class="bi bi-box-arrow-up-right"></i> View Original Article
+                                    </a>
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="article-content">
+                    {{ article.content|linebreaks }}
+                </div>
+
+                {% if feedback_stats.total_count > 0 %}
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <h5>Article Statistics</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1">
+                                    <strong>Average Rating:</strong>
+                                    <span class="rating-stars ms-2">
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= feedback_stats.avg_rating|floatformat:0|add:"0" %}
+                                                <i class="bi bi-star-fill"></i>
+                                            {% else %}
+                                                <i class="bi bi-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </span>
+                                    <strong class="ms-2">{{ feedback_stats.avg_rating|floatformat:1 }}/5.0</strong>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-0">
+                                    <strong>Total Feedback:</strong> {{ feedback_stats.total_count }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </article>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-chat-dots"></i> Share Your Feedback</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="feedbackForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ form.rating.id_for_label }}" class="form-label">
+                            {{ form.rating.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ form.rating }}
+                        <small class="form-text text-muted">Rate this article from 1 (poor) to 5 (excellent)</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.comment.id_for_label }}" class="form-label">
+                            {{ form.comment.label }}
+                        </label>
+                        {{ form.comment }}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.user_name.id_for_label }}" class="form-label">
+                                {{ form.user_name.label }}
+                            </label>
+                            {{ form.user_name }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.user_email.id_for_label }}" class="form-label">
+                                {{ form.user_email.label }}
+                            </label>
+                            {{ form.user_email }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        {{ form.is_helpful }}
+                        <label class="form-check-label" for="{{ form.is_helpful.id_for_label }}">
+                            {{ form.is_helpful.label }}
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> Submit Feedback
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {% if recent_feedback %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-chat-left-text"></i> Recent Feedback</h5>
+                </div>
+                <div class="card-body">
+                    {% for feedback in recent_feedback %}
+                        <div class="feedback-card">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <span class="rating-stars">
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= feedback.rating %}
+                                                <i class="bi bi-star-fill"></i>
+                                            {% else %}
+                                                <i class="bi bi-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </span>
+                                    <strong class="ms-2">{{ feedback.rating }}/5</strong>
+                                    {% if feedback.is_helpful %}
+                                        <span class="badge bg-success ms-2">Helpful</span>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted">{{ feedback.created_at|date:"M d, Y" }}</small>
+                            </div>
+                            {% if feedback.comment %}
+                                <p class="mb-1">{{ feedback.comment }}</p>
+                            {% endif %}
+                            {% if feedback.user_name %}
+                                <small class="text-muted">— {{ feedback.user_name }}</small>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        {% if related_articles %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-link-45deg"></i> Related Articles</h5>
+                </div>
+                <div class="card-body">
+                    {% for related in related_articles %}
+                        <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                            <h6><a href="{% url 'news:news_detail' related.id %}" class="text-decoration-none">
+                                {{ related.title|truncatewords:10 }}
+                            </a></h6>
+                            <small class="text-muted">{{ related.published_date|date:"M d, Y" }}</small>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> About the Source</h5>
+            </div>
+            <div class="card-body">
+                <h6>{{ article.source.name }}</h6>
+                <p class="text-muted mb-2">
+                    <i class="bi bi-geo-alt"></i> {{ article.source.region }}
+                </p>
+                {% if article.source.description %}
+                    <p>{{ article.source.description }}</p>
+                {% endif %}
+                {% if article.source.website %}
+                    <a href="{{ article.source.website }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                        Visit Website <i class="bi bi-box-arrow-up-right"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

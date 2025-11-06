@@ -1,0 +1,150 @@
+{% extends 'news/base.html' %}
+
+{% block title %}Statistics - Government News Feedback{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-5 fw-bold mb-3">
+            <i class="bi bi-bar-chart"></i> Platform Statistics
+        </h1>
+        <p class="lead text-muted">Insights into news articles and user feedback</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2 class="display-4 text-primary">{{ total_articles }}</h2>
+                <p class="card-text text-muted">Total Articles</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2 class="display-4 text-success">{{ total_feedback }}</h2>
+                <p class="card-text text-muted">Total Feedback</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2 class="display-4 text-info">{{ total_sources }}</h2>
+                <p class="card-text text-muted">Active Sources</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2 class="display-4 text-warning">
+                    {% if avg_rating %}{{ avg_rating }}{% else %}N/A{% endif %}
+                </h2>
+                <p class="card-text text-muted">Average Rating</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Articles by Category</h5>
+            </div>
+            <div class="card-body">
+                {% if articles_by_category %}
+                    <ul class="list-group list-group-flush">
+                        {% for item in articles_by_category %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ item.category|title }}</span>
+                                <span class="badge bg-primary rounded-pill">{{ item.count }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-trophy"></i> Top Sources</h5>
+            </div>
+            <div class="card-body">
+                {% if top_sources %}
+                    <ul class="list-group list-group-flush">
+                        {% for source in top_sources %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ source.name }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ source.region }}</small>
+                                </div>
+                                <span class="badge bg-success rounded-pill">{{ source.article_count }} articles</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-star"></i> Most Discussed Articles</h5>
+            </div>
+            <div class="card-body">
+                {% if top_articles %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Article Title</th>
+                                    <th>Source</th>
+                                    <th>Category</th>
+                                    <th>Feedback Count</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for article in top_articles %}
+                                    <tr>
+                                        <td>{{ article.title|truncatewords:10 }}</td>
+                                        <td>{{ article.source.name }}</td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ article.get_category_display }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">{{ article.feedback_count }}</span>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'news:news_detail' article.id %}" class="btn btn-sm btn-outline-primary">
+                                                View <i class="bi bi-arrow-right"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No articles with feedback yet</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,153 @@
+{% extends 'news/base.html' %}
+
+{% block title %}News Articles - Government News Feedback{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-5 fw-bold mb-3">
+            <i class="bi bi-newspaper"></i> Government News Articles
+        </h1>
+        <p class="lead text-muted">Stay informed about government-related news from different regional sources</p>
+    </div>
+</div>
+
+<div class="filter-section">
+    <form method="get" class="row g-3">
+        <div class="col-md-4">
+            <label for="id_region" class="form-label">Filter by Region</label>
+            <select name="region" id="id_region" class="form-select">
+                <option value="">All Regions</option>
+                {% for region in regions %}
+                    <option value="{{ region }}" {% if request.GET.region == region %}selected{% endif %}>
+                        {{ region }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="id_category" class="form-label">Filter by Category</label>
+            <select name="category" id="id_category" class="form-select">
+                <option value="">All Categories</option>
+                {% for value, label in filter_form.fields.category.choices %}
+                    {% if value %}
+                        <option value="{{ value }}" {% if request.GET.category == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="id_source" class="form-label">Filter by Source</label>
+            <select name="source" id="id_source" class="form-select">
+                <option value="">All Sources</option>
+                {% for source in sources %}
+                    <option value="{{ source.id }}" {% if request.GET.source == source.id|stringformat:"s" %}selected{% endif %}>
+                        {{ source.name }} ({{ source.region }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-funnel"></i> Apply Filters
+            </button>
+            <a href="{% url 'news:news_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle"></i> Clear Filters
+            </a>
+        </div>
+    </form>
+</div>
+
+{% if page_obj %}
+    <div class="row">
+        {% for article in page_obj %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <span class="badge bg-light text-dark badge-category">
+                            {{ article.get_category_display }}
+                        </span>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ article.title|truncatewords:15 }}</h5>
+                        <p class="card-text text-muted flex-grow-1">
+                            {{ article.content|truncatewords:30 }}
+                        </p>
+                        <div class="article-meta mb-3">
+                            <div><i class="bi bi-building"></i> <strong>{{ article.source.name }}</strong></div>
+                            <div><i class="bi bi-geo-alt"></i> {{ article.source.region }}</div>
+                            <div><i class="bi bi-calendar"></i> {{ article.published_date|date:"M d, Y" }}</div>
+                            {% if article.get_feedback_count > 0 %}
+                                <div class="mt-2">
+                                    <span class="rating-stars">
+                                        {% with avg=article.get_average_rating %}
+                                            {% for i in "12345"|make_list %}
+                                                {% if forloop.counter <= avg|floatformat:0|add:"0" %}
+                                                    <i class="bi bi-star-fill"></i>
+                                                {% else %}
+                                                    <i class="bi bi-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endwith %}
+                                    </span>
+                                    <small class="text-muted ms-2">
+                                        {{ article.get_average_rating }}/5.0 ({{ article.get_feedback_count }} feedback)
+                                    </small>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'news:news_detail' article.id %}" class="btn btn-primary mt-auto">
+                            Read More & Give Feedback <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if page_obj.has_other_pages %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.source %}&source={{ request.GET.source }}{% endif %}">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.source %}&source={{ request.GET.source }}{% endif %}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.source %}&source={{ request.GET.source }}{% endif %}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.source %}&source={{ request.GET.source }}{% endif %}">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No news articles found. Please check back later or adjust your filters.
+    </div>
+{% endif %}
+{% endblock %}
+
